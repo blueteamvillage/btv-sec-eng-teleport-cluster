@@ -1,0 +1,27 @@
+# Change variables to meet your requirements
+
+# AWS config
+region = "us-east-1"
+availability_zone = "us-east-1a"
+public_key_name = "id_teleport"
+// custom-tags = {"tag_name": "tag_value"}
+
+# Teleport AMI name
+# https://github.com/gravitational/teleport/blob/master/examples/aws/terraform/starter-cluster/README.md#steps
+ami_name = "gravitational-teleport-ami-oss-11.0.1"
+
+# Teleport cluster name (max 20 characters)
+cluster_name = "teleport"
+
+# Teleport S3 bucket
+s3_bucket_name = "teleport-s3"
+
+# Teleport URL & root domain name
+route53_zone = "example.invalid"
+route53_domain = "teleport.example.invalid"
+add_wildcard_route53_record = true
+
+# Let's Encrypt certificate registration
+email = "contact@example.invalid"
+use_letsencrypt = true
+use_acm = false
