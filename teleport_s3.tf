@@ -7,8 +7,14 @@ session replays and SSL certificates.
 // S3 bucket for cluster storage
 // For demo purposes, don't need bucket logging
 // tfsec:ignore:aws-s3-enable-bucket-logging
+resource "random_string" "bucket_suffix" {
+  length  = 5
+  special = false
+  upper   = false
+}
+
 resource "aws_s3_bucket" "storage" {
-  bucket        = var.s3_bucket_name
+  bucket        = "btv-terraform-s3-storage-${random_string.bucket_suffix.result}"
   force_destroy = true
 }
 
