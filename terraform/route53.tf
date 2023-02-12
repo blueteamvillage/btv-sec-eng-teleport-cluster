@@ -7,7 +7,7 @@ this automation to work.
 // Create A record to instance IP
 resource "aws_route53_record" "teleport_cluster" {
   zone_id = var.route53_zone_id
-  name    = var.route53_domain
+  name    = "teleport.${var.route53_domain}"
   type    = "A"
   ttl     = 300
   records = [aws_eip.telelport.public_ip]
@@ -16,7 +16,7 @@ resource "aws_route53_record" "teleport_cluster" {
 // Create A record to instance IP for wildcard subdomain
 resource "aws_route53_record" "wildcard-cluster" {
   zone_id = var.route53_zone_id
-  name    = "*.${var.route53_domain}"
+  name    = "*.teleport.${var.route53_domain}"
   type    = "A"
   ttl     = 300
   records = [aws_eip.telelport.public_ip]

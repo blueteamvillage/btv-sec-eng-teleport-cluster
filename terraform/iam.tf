@@ -42,24 +42,19 @@ resource "aws_iam_role_policy_attachment" "ssm" {
 
 
 // Policy to permit cluster to check EC2 nodes attempting to join
-data "aws_iam_policy_document" "describe_ec2_instances" {
+data "aws_iam_policy_document" "ec2" {
   version = "2012-10-17"
   statement {
     effect    = "Allow"
     actions   = ["ec2:DescribeInstances"]
     resources = ["*"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
   }
 }
 
 resource "aws_iam_role_policy" "ec2" {
   name   = "${var.PROJECT_PREFIX}-teleport-cluster-ec2"
   role   = aws_iam_role.teleport.id
-  policy = data.aws_iam_policy_document.describe_ec2_instances.json
+  policy = data.aws_iam_policy_document.ec2.json
 }
 
 // Policy to permit cluster to talk to S3 (Session recordings)
