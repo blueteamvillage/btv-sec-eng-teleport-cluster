@@ -4,15 +4,9 @@ metadata, and a simple locking mechanism for SSL
 cert generation and renewal.
 */
 
-resource "random_string" "suffix" {
-  length  = 5
-  special = false
-  upper   = false
-}
-
 // DynamoDB table for storing cluster state
 resource "aws_dynamodb_table" "teleport" {
-  name           = "${var.PROJECT_PREFIX}-teleport-${random_string.suffix.result}"
+  name           = var.cluster_name
   read_capacity  = 10
   write_capacity = 10
   hash_key       = "HashKey"
@@ -54,13 +48,13 @@ resource "aws_dynamodb_table" "teleport" {
   }
 
   tags = {
-    Project = var.PROJECT_PREFIX
+    TeleportCluster = var.cluster_name
   }
 }
 
 // DynamoDB table for storing cluster events
 resource "aws_dynamodb_table" "teleport_events" {
-  name           = "${var.PROJECT_PREFIX}-teleport-${random_string.suffix.result}-events"
+  name           = "${var.cluster_name}-events"
   read_capacity  = 10
   write_capacity = 10
   hash_key       = "SessionID"
@@ -115,13 +109,13 @@ resource "aws_dynamodb_table" "teleport_events" {
   }
 
   tags = {
-    Project = var.PROJECT_PREFIX
+    TeleportCluster = var.cluster_name
   }
 }
 
 // DynamoDB table for simple locking mechanism
 resource "aws_dynamodb_table" "teleport_locks" {
-  name           = "${var.PROJECT_PREFIX}-teleport-${random_string.suffix.result}-locks"
+  name           = "${var.cluster_name}-locks"
   read_capacity  = 5
   write_capacity = 5
   hash_key       = "Lock"
@@ -156,6 +150,6 @@ resource "aws_dynamodb_table" "teleport_locks" {
   }
 
   tags = {
-    Project = var.PROJECT_PREFIX
+    TeleportCluster = var.cluster_name
   }
 }
