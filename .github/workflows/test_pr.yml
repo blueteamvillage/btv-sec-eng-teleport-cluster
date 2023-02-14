@@ -1,0 +1,62 @@
+name: Test PR
+
+on: [push, pull_request]
+
+env:
+  PYTHON_VERSION: "3.10"
+  TERRAFORM_VERSION: "1.3.7"
+
+
+jobs:
+  terraform_test:
+    runs-on: ubuntu-22.04
+    steps:
+      ########################### Checkout code ###########################
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      ########################### Terraform ###########################
+      # https://github.com/marketplace/actions/hashicorp-setup-terraform
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "${{ env.TERRAFORM_VERSION }}"
+
+      - name: Terraform fmt
+        id: fmt
+        run: cd terraform/ && terraform fmt -check
+
+      - name: Terraform Init
+        id: init
+        run: cd terraform/ && terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: cd terraform/ && terraform validate -no-color
+
+  precommit_test:
+    runs-on: ubuntu-22.04
+    steps:
+      ########################### Checkout code ###########################
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      ########################### python ###########################
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "${{ env.PYTHON_VERSION }}"
+          cache: 'pip'
+
+      - name: Install Python deps
+        run: pip install -r ci/requirements.txt
+
+      - name: Install tfsec
+        run: go install github.com/aquasecurity/tfsec/cmd/tfsec@latest
+
+      ########################### pre-commit ###########################
+      - name: pre-commit modules
+        run: pre-commit run --all-files
