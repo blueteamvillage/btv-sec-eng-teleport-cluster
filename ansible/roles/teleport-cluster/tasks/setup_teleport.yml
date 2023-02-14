@@ -1,0 +1,102 @@
+######################################################
+# Install Teleport
+######################################################
+- name: Add Teleport GPG key
+  ansible.builtin.apt_key:
+    url: "{{ teleport_gpg_key }}"
+    state: present
+
+- name: Add Teleport APT repo
+  ansible.builtin.apt_repository:
+    repo: "{{ teleport_apt_repo }}"
+    state: present
+
+- name: Install Teleport
+  ansible.builtin.apt:
+    name: "teleport"
+    state: latest
+
+######################################################
+# Setup Teleport
+######################################################
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: /etc/teleport.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy Teleport config
+  ansible.builtin.template:
+    src: "templates/teleport.yaml.j2"
+    dest: "/etc/teleport.yaml"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Start Teleport
+  ansible.builtin.service:
+    name: "teleport"
+    state: restarted
+    enabled: true
+
+######################################################
+# Setup roles
+######################################################
+- name: Copy sec_infra role
+  ansible.builtin.template:
+    src: "templates/sec_infra_role.yaml.j2"
+    dest: "/etc/teleport.d/sec_infra_role.yaml"
+    owner: root
+    group: root
+    mode: 0400
+
+- name: Create sec_infra role
+  ansible.builtin.command: "tctl create -f /etc/teleport.d/sec_infra_role.yaml"
+
+- name: Copy workshop_contributor role
+  ansible.builtin.template:
+    src: "templates/workshop_contributors_role.yaml.j2"
+    dest: "/etc/teleport.d/workshop_contributors_role.yaml"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Create sec_infra role
+  ansible.builtin.command: "tctl create -f /etc/teleport.d/workshop_contributors_role.yaml"
+
+######################################################
+# Setup Github SSO
+# https://goteleport.com/docs/access-controls/sso/github-sso/
+######################################################
+- name: Copy Github config
+  ansible.builtin.template:
+    src: "templates/github.yaml.j2"
+    dest: "/etc/teleport.d/github.yaml"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Create Github connector
+  ansible.builtin.command: "tctl create -f /etc/teleport.d/github.yaml"
+
+- name: Copy cap config
+  ansible.builtin.template:
+    src: "templates/cap.yaml.j2"
+    dest: "/etc/teleport.d/cap.yaml"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Create cluster auth preferences
+  ansible.builtin.command: "tctl create -f /etc/teleport.d/cap.yaml"
+
+######################################################
+# Healthcheck Teleport
+######################################################
+- name: Teleport Health Check
+  ansible.builtin.wait_for:
+    port: [443, 3022, 3025]
+    delay: 10
+    timeout: 300

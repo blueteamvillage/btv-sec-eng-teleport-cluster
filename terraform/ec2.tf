@@ -84,7 +84,10 @@ resource "aws_instance" "teleport" {
   }
 
   root_block_device {
-    encrypted = true
+    encrypted             = true
+    volume_size           = 40
+    volume_type           = "gp2"
+    delete_on_termination = true
   }
 
   tags = {

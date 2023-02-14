@@ -1,0 +1,7 @@
+---
+# tasks file for ansible/teleport-cluster
+- name: Init Linux host
+  ansible.builtin.import_tasks: init_linux.yml
+
+- name: Setup teleport
+  ansible.builtin.import_tasks: setup_teleport.yml

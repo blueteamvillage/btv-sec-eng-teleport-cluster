@@ -1,0 +1,40 @@
+version: v2
+teleport:
+  nodename: {{ ansible_hostname }}
+  data_dir: /var/lib/teleport
+  log:
+    output: stderr
+    severity: INFO
+    format:
+      output: text
+  ca_pin: ""
+  diag_addr: ""
+  storage:
+    type: dynamodb
+    region: "{{ primary_region }}"
+    # Name of the DynamoDB table. If it does not exist, Teleport will create it.
+    table_name: {{ teleport_dynamodb_table }}
+    audit_events_uri:  ['dynamodb://{{ teleport_dynamodb_events_table }}', 'file:///var/lib/teleport/audit/events', 'stdout://']
+    audit_sessions_uri: "s3://{{ teleport_bucket_name }}/records"
+    audit_retention_period: 90d
+auth_service:
+  enabled: "yes"
+  listen_addr: 0.0.0.0:{{ teleport_auth_service_port }}
+  cluster_name: {{ teleport_fqdn }}
+  proxy_listener_mode: multiplex
+ssh_service:
+  enabled: "yes"
+  commands:
+  - name: hostname
+    command: [hostname]
+    period: 1m0s
+proxy_service:
+  enabled: "yes"
+  web_listen_addr: 0.0.0.0:{{ teleport_proxy_service_port }}
+  public_addr: {{ teleport_fqdn }}:{{ teleport_proxy_service_port }}
+  https_keypairs: []
+  acme:
+    enabled: "yes"
+    email: admin@{{ teleport_fqdn }}
+app_service:
+  enabled: "yes"

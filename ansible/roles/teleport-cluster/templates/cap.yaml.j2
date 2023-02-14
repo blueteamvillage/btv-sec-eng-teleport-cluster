@@ -1,0 +1,8 @@
+kind: cluster_auth_preference
+metadata:
+  name: cluster-auth-preference
+spec:
+  type: github
+  webauthn:
+    rp_id: '{{ teleport_fqdn }}'
+version: v2

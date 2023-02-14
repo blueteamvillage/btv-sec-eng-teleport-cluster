@@ -1,0 +1,10 @@
+kind: role
+version: v6
+metadata:
+  name: sec_infra
+spec:
+  allow:
+    logins: ['ubuntu', 'administrator']
+    kubernetes_groups: ['edit']
+    node_labels:
+      '*': '*'

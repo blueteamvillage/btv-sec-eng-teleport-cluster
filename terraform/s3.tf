@@ -57,16 +57,16 @@ resource "aws_s3_bucket_lifecycle_configuration" "teleport" {
       days = 90
     }
 
-    # filter {
-    #   and {
-    #     prefix = "log/"
+    filter {
+      and {
+        prefix = "records/"
 
-    #     tags = {
-    #       rule      = "log"
-    #       autoclean = "true"
-    #     }
-    #   }
-    # }
+        tags = {
+          rule      = "log"
+          autoclean = "true"
+        }
+      }
+    }
 
     status = "Enabled"
   }
