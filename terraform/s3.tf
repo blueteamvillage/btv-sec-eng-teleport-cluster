@@ -72,6 +72,13 @@ resource "aws_s3_bucket_lifecycle_configuration" "teleport" {
   }
 }
 
+resource "aws_s3_bucket_object" "records" {
+  bucket = aws_s3_bucket.teleport.bucket
+  acl    = "private"
+  key    = "records/"
+  source = "/dev/null"
+}
+
 resource "aws_s3_bucket" "teleport" {
   bucket        = replace(lower("${var.PROJECT_PREFIX}-teleport-${random_string.bucket_suffix.result}"), "_", "-")
   force_destroy = true

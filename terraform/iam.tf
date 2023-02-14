@@ -77,7 +77,7 @@ data "aws_iam_policy_document" "s3" {
       "s3:GetObject",
       "s3:GetObjectVersion",
     ]
-    resources = ["arn:aws:s3:::${aws_s3_bucket.teleport.bucket}/*"]
+    resources = ["arn:aws:s3:::${aws_s3_bucket.teleport.bucket}/records"]
   }
 }
 
