@@ -1,0 +1,47 @@
+####################################################################
+# Setup Timedatectl
+####################################################################
+- name: Set time to {{ timezone }}
+  community.general.timezone:
+    name: '{{ timezone }}'
+
+####################################################################
+# Apt update
+####################################################################
+- name: Run the equivalent of "apt-get update" as a separate step
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Update all packages to their latest version
+  ansible.builtin.apt:
+    name: "*"
+    state: latest
+
+####################################################################
+# Reboot
+####################################################################
+- name: Check if reboot required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required_file
+
+- name: Reboot a slow machine that might have lots of updates to apply
+  ansible.builtin.reboot:
+    reboot_timeout: 3600
+  when: reboot_required_file.stat.exists
+
+####################################################################
+# Install software
+####################################################################
+- name: Install software
+  ansible.builtin.apt:
+    name: ["apt-transport-https", "htop", "tcpdump", "net-tools", "wget"]
+    state: latest
+
+####################################################################
+# Setup apt-cron
+####################################################################
+- name: Install/Setup cron-apt
+  ansible.builtin.apt:
+    name: cron-apt
+    state: latest

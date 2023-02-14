@@ -47,8 +47,40 @@ resource "aws_s3_bucket_acl" "teleport" {
   acl    = "private"
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "teleport" {
+  bucket = aws_s3_bucket.teleport.bucket
+
+  rule {
+    id = "log"
+
+    expiration {
+      days = 90
+    }
+
+    filter {
+      and {
+        prefix = "records/"
+
+        tags = {
+          rule      = "log"
+          autoclean = "true"
+        }
+      }
+    }
+
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_object" "records" {
+  bucket = aws_s3_bucket.teleport.bucket
+  acl    = "private"
+  key    = "records/"
+  source = "/dev/null"
+}
+
 resource "aws_s3_bucket" "teleport" {
-  bucket        = "${var.PROJECT_PREFIX}-teleport-${random_string.bucket_suffix.result}"
+  bucket        = replace(lower("${var.PROJECT_PREFIX}-teleport-${random_string.bucket_suffix.result}"), "_", "-")
   force_destroy = true
 
   tags = {

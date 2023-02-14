@@ -1,24 +1,53 @@
-# Adapted from Teleport's single cluster example
+# Blue Team Village Teleport cluster
 
-Source: https://github.com/gravitational/teleport/blob/master/examples/aws/terraform/starter-cluster/
+## What is this repo?
+This repo contains a Terraform module and an Ansible role that can be imported into existing projects to setup a Teleport cluster and agents.
 
-***
+## Prerequisites
+### Install/Setup Terraform
+It should be noted that this repo only supports Terraform `v1.3.7` and greater.
 
-# Teleport Terraform AWS AMI Simple Example
+* [Terraform install on Windows](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+* [Terraform install on Linux ](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+* [Terraform install on macOS](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 
-This is a simple Terraform example to get you started provisioning an all-in-one Teleport cluster (auth, node, proxy) on a single ec2 instance based on Teleport's pre-built AMI.
+### Install/Setup Anislbe
+It should be noted that this repo only supports Ansible `v2.14.1` and greater.
 
-Do not use this in production! This example should be used for demo, proof-of-concept, or learning purposes only.
+* [Ansible install on Windows](https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-windows)
+* [Ansible install on Linux ](https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-ubuntu)
+* [Ansible install on macOS](https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-ubuntu)
 
-## How does this work?
+### Install/Setup AWS CLI and Terraform
+* [AWS CLI Windows install](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-windows.html)
+* [AWS CLI Linux install](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html)
+* [AWS CLI macOS install](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-mac.html)
 
-Teleport AMIs are built so you only need to specify environment variables to bring a fully configured instance online. See `data.tpl` or our [documentation](https://goteleport.com/docs/deploy-a-cluster/deployments/aws-terraform/#set-up-variables) to learn more about supported environment variables.
+### Install/Setup Teleport tsh
+* [Teleport tsh install on Windows](https://goteleport.com/docs/installation/#windows-tsh-client-only)
+* [Teleport tsh install on Linux ](https://goteleport.com/docs/installation/#linux)
+* [Teleport tsh install on macOS](https://goteleport.com/docs/installation/#macos)
 
-A series of systemd [units](https://github.com/gravitational/teleport/tree/master/assets/aws/files/system) bootstrap the instance, via several bash [scripts](https://github.com/gravitational/teleport/tree/master/assets/aws/files/bin).
+## Github SSO
+This section will walk through the process to create a Github Oauth app for Teleport SSO. These steps need to be executed by a Github org admin.
 
-While this may not be sufficient for all use cases, it's a great proof-of-concept that you can fork and customize to your liking. Check out our AWS AMI [generation code](https://github.com/gravitational/teleport/tree/master/assets/aws) if you're interested in adapting this to your requirements.
+1. Log into Github as an org admin
+1. Browse to your Github orgs settings page
+    * [BlueTeamVillage settings page](https://github.com/organizations/blueteamvillage/settings/profile)
+1. Developer settings > OAuth apps
+1. Select "Register an application"
+    1. Enter an application name
+    1. Enter your project's Homepage URL
+    1. Enter a description
+    1. Enter `https://<teleport FQDN>/v1/webapi/github/` for Authorization callback URL
+        1. ![teleport_github_oauth](.img/teleport_github_oauth.png)
+    1. Select "Register application"
+        1. ![github_OAuth_secret](.img/teleport-github_OAuth_secret.jpeg)
+1. Select "Generate a new client secret"
+1. Copy "OAuth client ID" and "Oauth client secret"
 
-This Terraform example will configure the following AWS resources:
+## Terraform
+Perform the following instructions in an existing Terraform project. Upon completion, this Terraform module will create all the necessary AWS resources for a high-availability Teleport cluster:
 
 - Teleport all-in-one (auth, node, proxy) single cluster ec2 instance
 - DynamoDB tables (cluster state, cluster events, ssl lock)
@@ -26,112 +55,193 @@ This Terraform example will configure the following AWS resources:
 - Route53 `A` record
 - Security Groups and IAM roles
 
-## Instructions
-
-### Build Requirements
-
-- terraform v1.0+ [install docs](https://learn.hashicorp.com/tutorials/terraform/install-cli)
-- awscli v1.14+ [install docs](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-
-### Usage
-
-- `make plan` and verify the plan is building what you expect.
-- `make apply` to begin provisioning.
-- `make destroy` to delete the provisioned resources.
-
-### Project layout
+### Terraform layout
 
 File           | Description
 -------------- | ---------------------------------------------------------------------------------------------
-cluster.tf     | EC2 instance template and provisioning.
-cluster_iam.tf | IAM role provisioning. Permits ec2 instance to talk to AWS resources (ssm, s3, dynamodb, etc)
-cluster_sg.tf  | Security Group provisioning. Ingress network rules.
-data.tf        | Misc variables used for provisioning AWS resources.
-data.tpl       | Template for Teleport configuration.
-dynamo.tf      | DynamoDB table provisioning. Tables used for Teleport state and events.
-route53.tpl    | Route53 zone creation. Requires a hosted zone to configure SSL.
+dynamodb.tf    | DynamoDB table provisioning. Tables used for Teleport state and events.
+ec2.tf         | EC2 instance provisioning.
+iam.tf         | IAM role provisioning. Permits ec2 instance to talk to AWS resources (S3, DynamoDB, etc)
+outputs.tf     | Export module variables to be used by other Terraform resources
+route53.tf     | Route53 zone creation. Requires a hosted zone to configure SSL.
 s3.tf          | S3 bucket provisioning. Bucket used for session recording storage.
-ssm.tf         | Teleport license distribution (if using Teleport enterprise).
-vars.tf        | Inbound variables for Teleport configuration.
+secrets.tf     | Creates empty secret stub for Github Oauth client secret
+variables.tf   | Inbound variables for Teleport module
 
-### Steps
+### Instructions
+1. `vim main.tf` and add:
+```
+module "teleport" {
+  source = "github.com/blueteamvillage/btv-teleport-single-cluster"
 
-Update the included Makefile to define your configuration.
+  #### General ####
+  PROJECT_PREFIX = <project name>
+  primary_region = <region to deploy Teleport cluster too>
+  public_key_name = <Name of an SSH key to provision the EC2 instance>
 
-1. Run `make apply`.
-2. SSH to your new instance. `ssh ec2-user@<cluster_domain>`.
-3. Create a user (this will create a Teleport User and permit login as the local ec2-user).
-   - OSS:
-   `tctl users add <username> ec2-user`
-   - Enterprise (requires a role):
-    `tctl users add --roles=admin <username> --logins=ec2-user`
-4. Click the registration link provided by the output. Set a password and configure your 2fa token.
-5. Success! You've configured a fully functional Teleport cluster.
+  #### Route53 ####
+  route53_zone_id = "<Route 53 Zone ID for the Teleport FQDN>"
+  route53_domain = "<domain>"
 
-```bash
-# Set up Terraform variables in a separate environment file, or inline here
+  #### VPC ####
+  vpc_id = <VPC ID to deploy Teleport too>
+  teleport_subnet_id = <Subnet ID to deploy Teleport too>
 
-# Region to run in - we currently have AMIs in the following regions:
-# ap-south-1, ap-northeast-2, ap-southeast-1, ap-southeast-2, ap-northeast-1, ca-central-1, eu-central-1, eu-west-1, eu-west-2
-# sa-east-1, us-east-1, us-east-2, us-west-1, us-west-2
-TF_VAR_region ?= "us-east-1"
-
-# Cluster name is a unique cluster name to use, should be unique and not contain spaces or other special characters
-TF_VAR_cluster_name ?= "TeleportCluster1"
-
-# AWS SSH key pair name to provision in installed instances, must be a key pair available in the above defined region (AWS Console > EC2 > Key Pairs)
-TF_VAR_key_name ?= "example"
-
-# Full absolute path to the license file, on the machine executing Terraform, for Teleport Enterprise.
-# This license will be copied into AWS SSM and then pulled down on the auth nodes to enable Enterprise functionality
-TF_VAR_license_path ?= "/path/to/license"
-
-# AMI name contains the version of Teleport to install, and whether to use OSS or Enterprise version
-# These AMIs are published by Teleport and shared as public whenever a new version of Teleport is released
-# To list available AMIs:
-# OSS: aws ec2 describe-images --owners 126027368216 --filters 'Name=name,Values=gravitational-teleport-ami-oss*'
-# Enterprise: aws ec2 describe-images --owners 126027368216 --filters 'Name=name,Values=gravitational-teleport-ami-ent*'
-# FIPS 140-2 images are also available for Enterprise customers, look for '-fips' on the end of the AMI's name
-TF_VAR_ami_name ?= "gravitational-teleport-ami-ent-11.1.0"
-
-# Route 53 hosted zone to use, must be a root zone registered in AWS, e.g. example.com
-TF_VAR_route53_zone ?= "example.com"
-
-# Subdomain to set up in the zone above, e.g. cluster.example.com
-# This will be used for users connecting to Teleport proxy
-TF_VAR_route53_domain ?= "cluster.example.com"
-
-# Set to true to add a wildcard subdomain entry to point to the proxy, e.g. *.cluster.example.com
-# This is used to enable Teleport Application Access
-export TF_VAR_add_wildcard_route53_record="true"
-
-# Enable adding MongoDB listeners in Teleport proxy, load balancer ports, and security groups
-export TF_VAR_enable_mongodb_listener="true"
-
-# Enable adding MySQL listeners in Teleport proxy, load balancer ports, and security groups
-export TF_VAR_enable_mysql_listener="true"
-
-# Enable adding Postgres listeners in Teleport proxy, load balancer ports, and security groups
-export TF_VAR_enable_postgres_listener="true"
-
-# Bucket name to store encrypted Let's Encrypt certificates.
-TF_VAR_s3_bucket_name ?= "teleport.example.com"
-
-# Email to be used for Let's Encrypt certificate registration process.
-TF_VAR_email ?= "support@example.com"
-
-# Set to true to use Let's Encrypt to provision certificates
-TF_VAR_use_letsencrypt ?= true
-
-# Set to true to use ACM (Amazon Certificate Manager) to provision certificates
-# If you wish to use a pre-existing ACM certificate rather than having Terraform generate one for you, you can import it:
-# terraform import aws_acm_certificate.cert <certificate_arn>
-TF_VAR_use_acm ?= false
-
-# plan
-make plan
+}
+```
+1. `terraform init`
+    1. Import this new module
+1. `terraform apply`
+```
+module.teleport.aws_dynamodb_table.teleport_locks: Creating...
+module.teleport.aws_dynamodb_table.teleport: Creating...
+module.teleport.aws_dynamodb_table.teleport_events: Creating...
+module.teleport.aws_s3_bucket.teleport: Creating...
+module.teleport.aws_s3_bucket.teleport: Creation complete after 2s [id=defcon-2023-obsidian-teleport-kxl6y]
+module.teleport.aws_s3_bucket_acl.teleport: Creating...
 ```
 
-## Public Teleport AMI IDs
+### Set the value of Github OAuth secret
+1. Log into AWS console
+1. Go to the [Secrets Manager service](https://us-east-2.console.aws.amazon.com/secretsmanager/home?region=us-east-2#)
+1. Terraform created an empty with the following name schema: `"${var.PROJECT_PREFIX}-teleport-github-OAuth-secret"`
+1. Secret value > Retrieve secret value
+    1. This will produce an error because no value has been set, this is expected
+1. Select "Set secret value"
+1. Set secret value to the Github OAuth client secret
 
-Please [see the AMIS.md file](../AMIS.md) for a list of public Teleport AMI IDs that you can use.
+## Ansible
+Perform the following instructions in an existing Ansible project. Upon completion, this Ansible will create a single-node Teleport "cluster" configured with Github SSO.
+
+### Terraform layout
+
+File                             | Description
+----------------------------------------- | ----------------------------------------------------------------
+teleport-cluster/tasks/init_linux.yml     | Ansible tasks to update linux and set basic OS settings
+teleport-cluster/tasks/setup_teleport.yml | Ansible tasks to install Teleport and configure based on the tempalte in `teleport-cluster/templates`
+teleport-cluster/templates/cap.yaml.j2                   | Configure Github SSO as the default login mechanism
+teleport-cluster/templates/github.yaml.j2                | Configure Github SSO for your org
+teleport-cluster/templates/sec_infra_role.yaml.j2        | Define the resources admins have access too
+teleport-cluster/templates/workshop_contributors.yaml.j2 | Define the resources workshop contributors have access too
+teleport-cluster/var/main.yml | Variables for how to install and configure Teleport
+
+### Create a tunnel using SSM
+Teleport by default does not expose SSH to the public internet. To provision the EC2 instance via Ansible we can use SSM to create a tunnel that can be used by Ansible.
+
+1. `aws ssm start-session --target <Teleport EC2 instance ID> --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["22"], "localPortNumber":["2022"]}'`
+
+![ansible_aws_ssm_session](/.img/ansible_aws_ssm_session.png)
+
+
+![aws_ssm_tunnel_ssh](.img/ansible_ssh_ssm_port_2022.png)
+
+### Init Ansible playbook
+1. `ansible-galaxy collection install amazon.aws`
+1. `pip3 install -U boto3==1.26.69`
+1. `vim hosts.ini` and set:
+```ini
+[teleport_cluster]
+127.0.0.1 ansible_port=2022 ansible_user=ubuntu
+```
+
+1. `group_vars/teleport_cluster.yml` and set:
+    1. General
+        1. `teleport_fqdn` - Set the fully qualified domain for Teleport
+        1. `primary_region` - Set to the region where you want to host Teleport
+    1. AWS
+        1. `teleport_bucket_name` - Set this to the name of the S3 bucket created by the Terraform for Teleport
+        1. `teleport_dynamodb_table` - Set this to the name of the DynamoDB table  created by the Terraform for Teleport
+            1. Name schmea: `"${var.PROJECT_PREFIX}-teleport-${random_string.suffix.result}"`
+            1. [AWS DynamoDB Table view](https://us-east-2.console.aws.amazon.com/dynamodbv2/home?region=us-east-2#tables)
+        1. `teleport_dynamodb_events_table` - Set this to the name of the DynamoDB table  created by the Terraform for Teleport
+            1. Name schmea: `"${var.PROJECT_PREFIX}-teleport-${random_string.suffix.result}-events"`
+            1. [AWS DynamoDB Table view](https://us-east-2.console.aws.amazon.com/dynamodbv2/home?region=us-east-2#tables)
+    1. Github
+        1. `github_org_name` - Name of the Github org for SSO
+        1. `github_client_id` - The Github Oauth client ID  - NOT a secret
+        1. `github_client_secret` - Define the name of the AWS Secret that contains the Github Oauth client` secret.
+        1. `github_redirect_url` - Leave this as the default value unless you are hosting Teleport at a different URL path.
+        1. `github_admin_team` - Define the Github team that contains a list of users that will be admins for the Teleport cluster
+        1. `github_workshop_contributors` - Define the Github team that contains a list of users that will be accessing computing resources behind the Teleport cluster
+    1. ![ansible_teleport_variables](.img/ansible_teleport_variables.png)
+    1. Save and exit
+
+### Run Ansible playbook
+1. `ansible-playbook -i hosts.ini deploy_teleport_cluster.yml`
+    1. ![ansible_deploy_teleport](.img/ansible_deploy_teleport.jpeg)
+
+## Teleport
+1. Connect to Teleport using SSM: `aws ssm start-session --target <Teleport EC2 instance ID>`
+1. `/bin/bash`
+    1. ![aws_ssm_ssh_session](.img/aws_ssm_ssh_session.jpeg)
+1. `tctl users add admin --roles=editor,access --logins=root,ubuntu`
+    1. Copy the URL produced
+    1. ![teleport_create_admin](.img/teleport_create_admin.png)
+1. Enter the URL produced in the previous command into your browser
+1. Select "Get started"
+    1. ![teleport_getting_started](.img/teleport_getting_started.png)
+1. Enter a password for the admin user
+    1. ![teleport_admin_password](.img/teleport_admin_password.png)
+1. Select "Next"
+1. Setup OTP
+    1. ![teleport_admin_otp](.img/teleport_admin_otp.png)
+1. Select "Go to dashboard"
+    1. ![teleport_admin_homescreen](.img/teleport_admin_homescreen.png)
+
+## User login via Github SSO
+### Log into Teleport via browser
+1. Browese to Teleport FQDN
+    1. Ex: `https://teleport.blueteamvillage.com/web/login`
+1. Select "Github"
+1. Select "Authorize <Github org name>
+    1. ![teleport_github_authorize](.img/teleport_github_authorize.png)
+
+### Log into Teleport using tsh CLI
+1. `tsh login --proxy=<teleport FQDN>`
+    ![teleport_tsh_login](.img/teleport_tsh_login.png)
+
+### SSH into Teleport EC2 instance
+```shell
+➜ tsh ls
+Node Name       Address        Labels
+--------------- -------------- ------------------------
+ip-172-16-10-93 127.0.0.1:3022 hostname=ip-172-16-10-93
+
+➜ tsh ssh ubuntu@ip-172-16-10-93
+ubuntu@ip-172-16-10-93:~$ whoami
+ubuntu
+ubuntu@ip-172-16-10-93:~$
+```
+
+## Supported versions
+* `Terraform v1.3.7`
+* `Ansible v2.14.1`
+* `Ubuntu Server 22.04`
+* `Teleport v12`
+* `awscli v2.2.31`
+
+## References
+* [Teleport starter cluster](https://github.com/gravitational/teleport/blob/master/examples/aws/terraform/starter-cluster/)
+* [Module Sources](https://developer.hashicorp.com/terraform/language/modules/sources)
+* [Installing Ansible on specific operating systems](https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-ubuntu)
+* [DC31-obsidian-sec-eng/terraform/README.md](https://github.com/blueteamvillage/DC31-obsidian-sec-eng/blob/main/terraform/README.md)
+* [aws_security_group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group)
+* [Teleport - Networking](https://goteleport.com/docs/reference/networking/)
+* [aws_security_group_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule)
+* [aws_eip](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip)
+* [lower](https://developer.hashicorp.com/terraform/language/functions/lower)
+* [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document)
+* [replace](https://developer.hashicorp.com/terraform/language/functions/replace)
+* [aws_s3_bucket_lifecycle_configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration)
+* [teleport/examples/aws/terraform/starter-cluster/cluster.tf](https://github.com/gravitational/teleport/blob/master/examples/aws/terraform/starter-cluster/cluster.tf)
+* [Set up Single Sign-On with GitHub](https://goteleport.com/docs/access-controls/sso/github-sso/)
+* [Teleport TSH installation](https://goteleport.com/docs/installation/#windows-tsh-client-only)
+* [Teleport Storage backends](https://goteleport.com/docs/reference/backends/#dynamodb)
+* [Convert value of an Ansible variable from lower case to upper case](https://serverfault.com/questions/677683/convert-value-of-an-ansible-variable-from-lower-case-to-upper-case)
+* [Boto3 Docs 1.26.69 documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html)
+* [Teleport Configuration Reference](https://goteleport.com/docs/reference/config/)
+* []()
+* []()
+* []()
+* []()
+* []()

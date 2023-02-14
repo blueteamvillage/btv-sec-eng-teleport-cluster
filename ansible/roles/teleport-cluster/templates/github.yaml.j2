@@ -1,0 +1,30 @@
+kind: github
+version: v3
+metadata:
+  # Connector name that will be used with `tsh --auth=github login`
+  name: github
+spec:
+  # Client ID of your GitHub OAuth App
+  client_id: {{ github_client_id }}
+  # Client secret of your GitHub OAuth App
+  client_secret: {{ github_client_secret }}
+  # Connector display name that will be shown on the Web UI login screen
+  display: GitHub
+  # Callback URL that will be called after successful authentication
+  redirect_url: {{ github_redirect_url }}
+  # Mapping of org/team memberships onto allowed roles
+  teams_to_roles:
+    # GitHub organization name
+    - organization: {{ github_org_name | lower }}
+      # GitHub team name within that organization
+      team: {{ github_admin_team | lower }}
+      # Maps octocats/admins to the "access" Teleport role
+      roles:
+        - editor
+        - sec_infra
+    - organization: {{ github_org_name | lower }}
+      # GitHub team name within that organization
+      team: {{ github_workshop_contributors | lower }}
+      # Maps octocats/admins to the "access" Teleport role
+      roles:
+        - workshop_contributors

@@ -1,0 +1,16 @@
+---
+# vars file for ansible/teleport-cluster
+
+######################################## teleport ########################################
+teleport_version: 12
+teleport_gpg_key: "https://apt.releases.teleport.dev/gpg"
+teleport_apt_repo: "deb https://apt.releases.teleport.dev/ubuntu {{ ansible_distribution_release }} stable/v{{ teleport_version }}"
+
+######################################## proxy_service ########################################
+teleport_proxy_service_port: 443
+
+######################################## ssh_service ########################################
+teleport_ssh_service_port: 3022
+
+######################################## auth_service ########################################
+teleport_auth_service_port: 3025

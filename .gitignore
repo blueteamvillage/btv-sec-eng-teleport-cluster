@@ -1,3 +1,5 @@
 .terraform
 terraform/terraform.tfvars
 terraform/.terraform
+ansible/hosts.ini
+ansible/deploy_teleport_cluster.yml
