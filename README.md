@@ -200,6 +200,19 @@ Teleport by default does not expose SSH to the public internet. To provision the
 1. `tsh login --proxy=<teleport FQDN>`
     ![teleport_tsh_login](.img/teleport_tsh_login.png)
 
+### SSH into Teleport EC2 instance
+```shell
+➜ tsh ls
+Node Name       Address        Labels
+--------------- -------------- ------------------------
+ip-172-16-10-93 127.0.0.1:3022 hostname=ip-172-16-10-93
+
+➜ tsh ssh ubuntu@ip-172-16-10-93
+ubuntu@ip-172-16-10-93:~$ whoami
+ubuntu
+ubuntu@ip-172-16-10-93:~$
+```
+
 ## Supported versions
 * `Terraform v1.3.7`
 * `Ansible v2.14.1`
