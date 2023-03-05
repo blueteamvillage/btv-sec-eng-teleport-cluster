@@ -72,7 +72,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "teleport" {
   }
 }
 
-resource "aws_s3_bucket_object" "records" {
+resource "aws_s3_object" "records" {
   bucket = aws_s3_bucket.teleport.bucket
   acl    = "private"
   key    = "records/"
