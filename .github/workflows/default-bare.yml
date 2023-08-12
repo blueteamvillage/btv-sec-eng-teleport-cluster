@@ -87,6 +87,11 @@ jobs:
           sudo ss -tunap
         if: ${{ always() }}
         continue-on-error: true
+      - name: After script - iptables
+        run: |
+          sudo iptables -L -vn
+        if: ${{ always() }}
+        continue-on-error: true
       - name: After script - etc
         run: |
           set -x
@@ -100,6 +105,13 @@ jobs:
           sudo tctl users ls
           sudo tctl nodes ls
           sudo tctl inventory ls
+        if: ${{ always() }}
+        continue-on-error: true
+      - name: After script - curl
+        run: |
+          set -x
+          hostname
+          curl -v https://`hostname` || true
         if: ${{ always() }}
         continue-on-error: true
       - name: After script - logs
