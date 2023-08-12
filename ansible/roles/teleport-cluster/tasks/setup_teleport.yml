@@ -96,8 +96,17 @@
 ######################################################
 # Healthcheck Teleport
 ######################################################
-- name: Teleport Health Check
+- name: Teleport Health Check - local port
   ansible.builtin.wait_for:
-    port: [443, 3022, 3025]
+    port: "{{ item }}"
     delay: 10
     timeout: 300
+  loop: [443, 3022, 3025]
+
+- name: Teleport Health Check - web fqdn
+  ansible.builtin.wait_for:
+    host: "{{ teleport_fqdn }}"
+    port: "{{ item }}"
+    delay: 10
+    timeout: 300
+  loop: [443]
