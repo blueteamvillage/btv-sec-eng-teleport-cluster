@@ -22,8 +22,8 @@ jobs:
       ANSIBLE_CALLBACKS_ENABLED: profile_tasks
       ANSIBLE_EXTRA_VARS: "-e teleport_storage_backend=sqlite -e teleport_auth_type=local"
       ANSIBLE_ROLE: blueteamvillage.btv-sec-eng-teleport-cluster
-      ANSIBLE_ROLE_PATH: btv-sec-eng-teleport-cluster/ansible/roles/teleport-cluster
-      ANSIBLE_PLAYBOOK: test/integration/default/default.yml
+      ANSIBLE_ROLE_PATH: ansible/roles/teleport-cluster
+      ANSIBLE_PLAYBOOK: tests/test.yml
 
     steps:
       - uses: actions/checkout@v3
