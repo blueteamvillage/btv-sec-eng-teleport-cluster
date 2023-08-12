@@ -29,6 +29,14 @@ auth_service:
   listen_addr: 0.0.0.0:{{ teleport_auth_service_port }}
   cluster_name: {{ teleport_fqdn }}
   proxy_listener_mode: multiplex
+{% if teleport_auth_type == 'local' %}
+  authentication:
+    type: local
+    # require_session_mfa: false
+    second_factor: "{{ teleport_auth_local_mfa | ternary('on', 'off') }}"
+    webauthn:
+      rp_id: {{ teleport_fqdn }}
+{% endif %}
 ssh_service:
   enabled: "yes"
   commands:

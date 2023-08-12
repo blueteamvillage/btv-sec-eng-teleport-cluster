@@ -25,6 +25,21 @@ teleport_storage_azureblob_domain: account-name.core.blob.windows.net
 
 # teleport_storage_backend: sqlite
 
+## Authentication
+# teleport_auth_type: local
+# mfa requires webauthn configuration
+teleport_auth_local_mfa: true
+# You can't provide password, users must be shared invite link and fill in.
+# Use `tctl users reset` to create new link.
+teleport_auth_local_users:
+  - username: joe
+    logins:
+      - joe
+      - root
+    roles:
+      - access
+      - editor
+
 # GitHub SSO
 teleport_auth_type: github
 github_org_name:

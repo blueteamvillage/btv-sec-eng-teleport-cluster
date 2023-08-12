@@ -61,6 +61,25 @@
   loop: "{{ teleport_roles_templates }}"
 
 ######################################################
+# Setup local users if local authentication
+# https://goteleport.com/docs/management/admin/users/#adding-local-users
+######################################################
+- name: Local Authentication
+  when:
+    - teleport_auth_type == 'local'
+  block:
+    - name: Create local users with tctl
+      ansible.builtin.command: "tctl users add {{ item.username }} --logins={{ item.logins | join(',') }} --roles={{ item.roles | join(',') }}"
+      register: tctlusers
+      changed_when:
+        - tctlusers.rc == 0
+        - "'already registered' not in tctlusers.stderr"
+      failed_when:
+        - tctlusers.rc != 0
+        - "'already registered' not in tctlusers.stderr"
+      loop: "{{ teleport_auth_local_users }}"
+
+######################################################
 # Setup Github SSO
 # https://goteleport.com/docs/access-controls/sso/github-sso/
 ######################################################
