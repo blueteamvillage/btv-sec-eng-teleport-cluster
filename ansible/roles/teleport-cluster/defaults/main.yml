@@ -6,6 +6,7 @@ teleport_fqdn: "{{ ansible_fqdn }}"
 # you won't be able to connect to web interface.
 teleport_acme_email: "admin@{{ teleport_fqdn }}"
 timezone: UTC
+teleport_reboot_enabled: true
 
 # roles templates without j2 suffix
 teleport_roles_templates:
