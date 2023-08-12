@@ -10,6 +10,7 @@ teleport:
   ca_pin: ""
   diag_addr: ""
   storage:
+{% if teleport_storage_backend == 'dynamodb' %}
     type: dynamodb
     region: "{{ primary_region }}"
     # Name of the DynamoDB table. If it does not exist, Teleport will create it.
@@ -17,6 +18,7 @@ teleport:
     audit_events_uri:  ['dynamodb://{{ teleport_dynamodb_events_table }}', 'file:///var/lib/teleport/audit/events', 'stdout://']
     audit_sessions_uri: "s3://{{ teleport_bucket_name }}/records"
     audit_retention_period: 90d
+{% endif %}
 auth_service:
   enabled: "yes"
   listen_addr: 0.0.0.0:{{ teleport_auth_service_port }}
@@ -35,6 +37,6 @@ proxy_service:
   https_keypairs: []
   acme:
     enabled: "yes"
-    email: admin@{{ teleport_fqdn }}
+    email: {{ teleport_acme_email }}
 app_service:
   enabled: "yes"

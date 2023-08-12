@@ -1,2 +1,42 @@
 ---
 # defaults file for ansible/teleport-cluster
+
+teleport_fqdn: "{{ ansible_fqdn }}"
+# must be valid else letsencrypt certificate won't be auto provisioned and
+# you won't be able to connect to web interface.
+teleport_acme_email: "admin@{{ teleport_fqdn }}"
+
+# roles templates without j2 suffix
+teleport_roles_templates:
+  - sec_infra_role.yaml
+  - workshop_contributors_role.yaml
+
+## https://goteleport.com/docs/reference/backends/
+teleport_storage_backend: dynamodb
+primary_region:
+teleport_bucket_name:
+teleport_dynamodb_table:
+teleport_dynamodb_events_table:
+
+# GitHub SSO
+teleport_auth_type: github
+github_org_name:
+github_client_id:
+github_client_secret:
+github_redirect_url:
+github_admin_team:
+github_workshop_contributors:
+
+######################################## teleport ########################################
+teleport_version: 12
+teleport_gpg_key: "https://apt.releases.teleport.dev/gpg"
+teleport_apt_repo: "deb https://apt.releases.teleport.dev/ubuntu {{ ansible_distribution_release }} stable/v{{ teleport_version }}"
+
+######################################## proxy_service ########################################
+teleport_proxy_service_port: 443
+
+######################################## ssh_service ########################################
+teleport_ssh_service_port: 3022
+
+######################################## auth_service ########################################
+teleport_auth_service_port: 3025
