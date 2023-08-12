@@ -51,6 +51,9 @@ github_redirect_url:
 github_admin_team:
 github_workshop_contributors:
 
+# Disable if CI without public fqdn
+teleport_auth_online: true
+
 ######################################## teleport ########################################
 teleport_version: 13
 teleport_gpg_key: "https://apt.releases.teleport.dev/gpg"

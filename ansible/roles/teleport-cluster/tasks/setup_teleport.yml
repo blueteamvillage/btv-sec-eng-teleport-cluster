@@ -63,6 +63,8 @@
   loop: "{{ teleport_roles_templates }}"
   loop_control:
     loop_var: teleport_cluster_item
+  when:
+    - teleport_auth_online | bool
 
 ######################################################
 # Setup local users if local authentication
@@ -71,6 +73,7 @@
 - name: Local Authentication
   when:
     - teleport_auth_type == 'local'
+    - teleport_auth_online | bool
   block:
     - name: Create local users with tctl
       ansible.builtin.command: |
@@ -109,6 +112,8 @@
 
     - name: Create Github connector
       ansible.builtin.command: "tctl create -f /etc/teleport.d/github.yaml"
+      when:
+        - teleport_auth_online | bool
 
     - name: Copy cap config
       ansible.builtin.template:
@@ -120,6 +125,8 @@
 
     - name: Create cluster auth preferences
       ansible.builtin.command: "tctl create -f /etc/teleport.d/cap.yaml"
+      when:
+        - teleport_auth_online | bool
 
 ######################################################
 # Healthcheck Teleport
@@ -142,3 +149,5 @@
   loop: [443]
   loop_control:
     loop_var: teleport_cluster_item
+  when:
+    - teleport_auth_online | bool

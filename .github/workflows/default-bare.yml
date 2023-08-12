@@ -20,7 +20,7 @@ jobs:
         os: [ubuntu-22.04, ubuntu-20.04]
     env:
       ANSIBLE_CALLBACKS_ENABLED: profile_tasks
-      ANSIBLE_EXTRA_VARS: "-e teleport_storage_backend=sqlite -e teleport_auth_type=local -e teleport_reboot_enabled=false"
+      ANSIBLE_EXTRA_VARS: "-e teleport_storage_backend=sqlite -e teleport_auth_type=local -e teleport_reboot_enabled=false -e teleport_auth_online=false"
       ANSIBLE_ROLE: blueteamvillage.btv-sec-eng-teleport-cluster
       ANSIBLE_ROLE_PATH: ansible/roles/teleport-cluster
       ANSIBLE_PLAYBOOK: tests/test.yml
