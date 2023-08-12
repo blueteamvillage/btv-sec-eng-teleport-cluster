@@ -18,6 +18,11 @@ teleport:
     audit_events_uri:  ['dynamodb://{{ teleport_dynamodb_events_table }}', 'file:///var/lib/teleport/audit/events', 'stdout://']
     audit_sessions_uri: "s3://{{ teleport_bucket_name }}/records"
     audit_retention_period: 90d
+{% elif teleport_storage_backend == 'azureblog' %}
+    audit_sessions_uri: azblob://{{ teleport_storage_azureblob_domain }}
+{% elif teleport_storage_backend == 'sqlite' %}
+    type: sqlite
+    sync: NORMAL
 {% endif %}
 auth_service:
   enabled: "yes"

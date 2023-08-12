@@ -18,6 +18,13 @@ teleport_bucket_name:
 teleport_dynamodb_table:
 teleport_dynamodb_events_table:
 
+# teleport_storage_backend: azureblob
+# permissions: rwd
+# recommended to use managed identity
+teleport_storage_azureblob_domain: account-name.core.blob.windows.net
+
+# teleport_storage_backend: sqlite
+
 # GitHub SSO
 teleport_auth_type: github
 github_org_name:
