@@ -46,19 +46,23 @@
 ######################################################
 - name: Copy role templates
   ansible.builtin.template:
-    src: "{{ item }}.j2"
-    dest: "/etc/teleport.d/{{ item | basename }}"
+    src: "{{ teleport_cluster_item }}.j2"
+    dest: "/etc/teleport.d/{{ teleport_cluster_item | basename }}"
     owner: root
     group: root
     mode: '0400'
   loop: "{{ teleport_roles_templates }}"
+  loop_control:
+    loop_var: teleport_cluster_item
 
 - name: Create role with tctl
-  ansible.builtin.command: "tctl create -f /etc/teleport.d/{{ item | basename }}"
+  ansible.builtin.command: "tctl create -f /etc/teleport.d/{{ teleport_cluster_item | basename }}"
   register: tctlrole
   changed_when:
     - "'has been created' in tctlrole.stdout"
   loop: "{{ teleport_roles_templates }}"
+  loop_control:
+    loop_var: teleport_cluster_item
 
 ######################################################
 # Setup local users if local authentication
@@ -69,7 +73,10 @@
     - teleport_auth_type == 'local'
   block:
     - name: Create local users with tctl
-      ansible.builtin.command: "tctl users add {{ item.username }} --logins={{ item.logins | join(',') }} --roles={{ item.roles | join(',') }}"
+      ansible.builtin.command: |
+        tctl users add {{ teleport_cluster_item.username }}
+          --logins={{ teleport_cluster_item.logins | join(',') }}
+          --roles={{ teleport_cluster_item.roles | join(',') }}
       register: tctlusers
       changed_when:
         - tctlusers.rc == 0
@@ -78,6 +85,8 @@
         - tctlusers.rc != 0
         - "'already registered' not in tctlusers.stderr"
       loop: "{{ teleport_auth_local_users }}"
+      loop_control:
+        loop_var: teleport_cluster_item
 
 ######################################################
 # Setup Github SSO
@@ -117,15 +126,19 @@
 ######################################################
 - name: Teleport Health Check - local port
   ansible.builtin.wait_for:
-    port: "{{ item }}"
+    port: "{{ teleport_cluster_item }}"
     delay: 10
     timeout: 300
   loop: [443, 3022, 3025]
+  loop_control:
+    loop_var: teleport_cluster_item
 
 - name: Teleport Health Check - web fqdn
   ansible.builtin.wait_for:
     host: "{{ teleport_fqdn }}"
-    port: "{{ item }}"
+    port: "{{ teleport_cluster_item }}"
     delay: 10
     timeout: 300
   loop: [443]
+  loop_control:
+    loop_var: teleport_cluster_item
