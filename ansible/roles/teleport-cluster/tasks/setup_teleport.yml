@@ -33,7 +33,7 @@
     dest: "/etc/teleport.yaml"
     owner: root
     group: root
-    mode: 0600
+    mode: '0600'
 
 - name: Start Teleport
   ansible.builtin.service:
@@ -50,7 +50,7 @@
     dest: "/etc/teleport.d/{{ item | basename }}"
     owner: root
     group: root
-    mode: 0400
+    mode: '0400'
   loop: "{{ teleport_roles_templates }}"
 
 - name: Create role with tctl
@@ -96,7 +96,7 @@
         dest: "/etc/teleport.d/github.yaml"
         owner: root
         group: root
-        mode: 0600
+        mode: '0600'
 
     - name: Create Github connector
       ansible.builtin.command: "tctl create -f /etc/teleport.d/github.yaml"
@@ -107,7 +107,7 @@
         dest: "/etc/teleport.d/cap.yaml"
         owner: root
         group: root
-        mode: 0600
+        mode: '0600'
 
     - name: Create cluster auth preferences
       ansible.builtin.command: "tctl create -f /etc/teleport.d/cap.yaml"

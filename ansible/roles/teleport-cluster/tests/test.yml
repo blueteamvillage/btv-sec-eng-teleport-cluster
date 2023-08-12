@@ -1,5 +1,6 @@
 ---
-- hosts: localhost
+- name: Test play
+  hosts: localhost
   remote_user: root
   roles:
     # - ansible/teleport-cluster
