@@ -33,7 +33,7 @@
     dest: "/etc/teleport.yaml"
     owner: root
     group: root
-    mode: 0600
+    mode: '0600'
 
 - name: Start Teleport
   ansible.builtin.service:
@@ -44,59 +44,110 @@
 ######################################################
 # Setup roles
 ######################################################
-- name: Copy sec_infra role
+- name: Copy role templates
   ansible.builtin.template:
-    src: "templates/sec_infra_role.yaml.j2"
-    dest: "/etc/teleport.d/sec_infra_role.yaml"
+    src: "{{ teleport_cluster_item }}.j2"
+    dest: "/etc/teleport.d/{{ teleport_cluster_item | basename }}"
     owner: root
     group: root
-    mode: 0400
+    mode: '0400'
+  loop: "{{ teleport_roles_templates }}"
+  loop_control:
+    loop_var: teleport_cluster_item
 
-- name: Create sec_infra role
-  ansible.builtin.command: "tctl create -f /etc/teleport.d/sec_infra_role.yaml"
+- name: Create role with tctl
+  ansible.builtin.command: "tctl create -f /etc/teleport.d/{{ teleport_cluster_item | basename }}"
+  register: tctlrole
+  changed_when:
+    - "'has been created' in tctlrole.stdout"
+  loop: "{{ teleport_roles_templates }}"
+  loop_control:
+    loop_var: teleport_cluster_item
+  when:
+    - teleport_auth_online | bool
 
-- name: Copy workshop_contributor role
-  ansible.builtin.template:
-    src: "templates/workshop_contributors_role.yaml.j2"
-    dest: "/etc/teleport.d/workshop_contributors_role.yaml"
-    owner: root
-    group: root
-    mode: 0600
-
-- name: Create sec_infra role
-  ansible.builtin.command: "tctl create -f /etc/teleport.d/workshop_contributors_role.yaml"
+######################################################
+# Setup local users if local authentication
+# https://goteleport.com/docs/management/admin/users/#adding-local-users
+######################################################
+- name: Local Authentication
+  when:
+    - teleport_auth_type == 'local'
+    - teleport_auth_online | bool
+  block:
+    - name: Create local users with tctl
+      ansible.builtin.command: |
+        tctl users add {{ teleport_cluster_item.username }}
+          --logins={{ teleport_cluster_item.logins | join(',') }}
+          --roles={{ teleport_cluster_item.roles | join(',') }}
+      register: tctlusers
+      changed_when:
+        - tctlusers.rc == 0
+        - "'already registered' not in tctlusers.stderr"
+      failed_when:
+        - tctlusers.rc != 0
+        - "'already registered' not in tctlusers.stderr"
+      loop: "{{ teleport_auth_local_users }}"
+      loop_control:
+        loop_var: teleport_cluster_item
 
 ######################################################
 # Setup Github SSO
 # https://goteleport.com/docs/access-controls/sso/github-sso/
 ######################################################
-- name: Copy Github config
-  ansible.builtin.template:
-    src: "templates/github.yaml.j2"
-    dest: "/etc/teleport.d/github.yaml"
-    owner: root
-    group: root
-    mode: 0600
+- name: Github SSO
+  when:
+    - teleport_auth_type == 'github'
+    - github_org_name|string
+    - github_client_id|string
+    - github_client_secret|string
+  block:
+    - name: Copy Github config
+      ansible.builtin.template:
+        src: "templates/github.yaml.j2"
+        dest: "/etc/teleport.d/github.yaml"
+        owner: root
+        group: root
+        mode: '0600'
 
-- name: Create Github connector
-  ansible.builtin.command: "tctl create -f /etc/teleport.d/github.yaml"
+    - name: Create Github connector
+      ansible.builtin.command: "tctl create -f /etc/teleport.d/github.yaml"
+      when:
+        - teleport_auth_online | bool
 
-- name: Copy cap config
-  ansible.builtin.template:
-    src: "templates/cap.yaml.j2"
-    dest: "/etc/teleport.d/cap.yaml"
-    owner: root
-    group: root
-    mode: 0600
+    - name: Copy cap config
+      ansible.builtin.template:
+        src: "templates/cap.yaml.j2"
+        dest: "/etc/teleport.d/cap.yaml"
+        owner: root
+        group: root
+        mode: '0600'
 
-- name: Create cluster auth preferences
-  ansible.builtin.command: "tctl create -f /etc/teleport.d/cap.yaml"
+    - name: Create cluster auth preferences
+      ansible.builtin.command: "tctl create -f /etc/teleport.d/cap.yaml"
+      when:
+        - teleport_auth_online | bool
 
 ######################################################
 # Healthcheck Teleport
 ######################################################
-- name: Teleport Health Check
+- name: Teleport Health Check - local port
   ansible.builtin.wait_for:
-    port: [443, 3022, 3025]
+    port: "{{ teleport_cluster_item }}"
     delay: 10
     timeout: 300
+  loop: [443, 3022, 3025]
+  loop_control:
+    loop_var: teleport_cluster_item
+
+- name: Teleport Health Check - web fqdn
+  ansible.builtin.wait_for:
+    host: "{{ teleport_fqdn }}"
+    port: "{{ teleport_cluster_item }}"
+    delay: 10
+    timeout: 300
+  loop: [443]
+  loop_control:
+    loop_var: teleport_cluster_item
+  when:
+    - teleport_auth_online | bool

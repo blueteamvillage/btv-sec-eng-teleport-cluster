@@ -1,7 +1,7 @@
-Role Name
+Teleport Cluster role
 =========
 
-A brief description of the role goes here.
+This role will setup a [Teleport Cluster](https://goteleport.com/).
 
 Requirements
 ------------
@@ -25,7 +25,14 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: servers
       roles:
-         - { role: username.rolename, x: 42 }
+         - { role: blueteamvillage.btv-sec-eng-teleport-cluster, x: 42 }
+
+FAQ
+---
+
+* Use `tctl users reset <username> to reset password/get user invite link`
+* In Azure, teleport will automatically recover VM tags as teleport labels
+* Once cluster is setup, you can use [mdsketch.teleport](https://github.com/mdsketch/ansible-teleport) to add servers to it. Teleport cluster must have network connectivity to nodes services like port 3022 for ssh.
 
 License
 -------

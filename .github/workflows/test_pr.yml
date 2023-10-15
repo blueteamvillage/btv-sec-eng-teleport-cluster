@@ -58,5 +58,9 @@ jobs:
         run: go install github.com/aquasecurity/tfsec/cmd/tfsec@latest
 
       ########################### pre-commit ###########################
+      - name: Ansible requirements
+        run: ansible-galaxy collection install -r ansible/roles/teleport-cluster/requirements.yml
+      - name: Symlink role name
+        run: ln -s ../../teleport-cluster ansible/roles/teleport-cluster/tests/blueteamvillage.btv-sec-eng-teleport-cluster
       - name: pre-commit modules
         run: pre-commit run --all-files

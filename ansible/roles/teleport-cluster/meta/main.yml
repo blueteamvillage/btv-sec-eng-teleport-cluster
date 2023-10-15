@@ -8,7 +8,7 @@ galaxy_info:
   issue_tracker_url: https://github.com/blueteamvillage/btv-teleport-single-cluster/issues
   license: MIT
 
-  min_ansible_version: 2.1
+  min_ansible_version: '2.1'
 
   # If this a Container Enabled role, provide the minimum Ansible Container version.
   # min_ansible_container_version:
@@ -20,7 +20,7 @@ galaxy_info:
   # https://galaxy.ansible.com/api/v1/platforms/
   #
   platforms:
-    - name: ubuntu
+    - name: Ubuntu
       versions:
         - jammy
 

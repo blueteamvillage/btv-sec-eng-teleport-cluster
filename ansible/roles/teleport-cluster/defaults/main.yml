@@ -1,2 +1,69 @@
 ---
 # defaults file for ansible/teleport-cluster
+
+teleport_fqdn: "{{ ansible_fqdn }}"
+# must be valid else letsencrypt certificate won't be auto provisioned and
+# you won't be able to connect to web interface.
+teleport_acme_email: "admin@{{ teleport_fqdn }}"
+timezone: UTC
+teleport_reboot_enabled: true
+
+# roles templates without j2 suffix
+teleport_roles_templates:
+  - sec_infra_role.yaml
+  - workshop_contributors_role.yaml
+
+## https://goteleport.com/docs/reference/backends/
+teleport_storage_backend: dynamodb
+primary_region:
+teleport_bucket_name:
+teleport_dynamodb_table:
+teleport_dynamodb_events_table:
+
+# teleport_storage_backend: azureblob
+# permissions: rwd
+# recommended to use managed identity
+teleport_storage_azureblob_domain: account-name.core.blob.windows.net
+
+# teleport_storage_backend: sqlite
+
+## Authentication
+# teleport_auth_type: local
+# mfa requires webauthn configuration
+teleport_auth_local_mfa: true
+# You can't provide password, users must be shared invite link and fill in.
+# Use `tctl users reset` to create new link.
+teleport_auth_local_users:
+  - username: joe
+    logins:
+      - joe
+      - root
+    roles:
+      - access
+      - editor
+
+# GitHub SSO
+teleport_auth_type: github
+github_org_name:
+github_client_id:
+github_client_secret:
+github_redirect_url:
+github_admin_team:
+github_workshop_contributors:
+
+# Disable if CI without public fqdn
+teleport_auth_online: true
+
+######################################## teleport ########################################
+teleport_version: 13
+teleport_gpg_key: "https://apt.releases.teleport.dev/gpg"
+teleport_apt_repo: "deb https://apt.releases.teleport.dev/ubuntu {{ ansible_distribution_release }} stable/v{{ teleport_version }}"
+
+######################################## proxy_service ########################################
+teleport_proxy_service_port: 443
+
+######################################## ssh_service ########################################
+teleport_ssh_service_port: 3022
+
+######################################## auth_service ########################################
+teleport_auth_service_port: 3025

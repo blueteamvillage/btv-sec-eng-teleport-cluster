@@ -11,6 +11,7 @@
 - name: Run the equivalent of "apt-get update" as a separate step
   ansible.builtin.apt:
     update_cache: true
+    cache_valid_time: "{{ teleport_apt_cache_valid_time | default(3600) }}"
 
 - name: Update all packages to their latest version
   ansible.builtin.apt:
@@ -28,7 +29,9 @@
 - name: Reboot a slow machine that might have lots of updates to apply
   ansible.builtin.reboot:
     reboot_timeout: 3600
-  when: reboot_required_file.stat.exists
+  when:
+    - reboot_required_file.stat.exists
+    - teleport_reboot_enabled | bool
 
 ####################################################################
 # Install software

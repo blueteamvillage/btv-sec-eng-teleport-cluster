@@ -1,5 +1,7 @@
 ---
-- hosts: localhost
+- name: Test play
+  hosts: localhost
   remote_user: root
   roles:
-    - ansible/teleport-cluster
+    # - ansible/teleport-cluster
+    - blueteamvillage.btv-sec-eng-teleport-cluster
