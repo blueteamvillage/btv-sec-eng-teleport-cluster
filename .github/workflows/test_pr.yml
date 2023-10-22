@@ -59,7 +59,7 @@ jobs:
 
       ########################### pre-commit ###########################
       - name: Ansible requirements
-        run: ansible-galaxy collection install -r ansible/roles/teleport-cluster/requirements.yml
+        run: ansible-galaxy collection install -r ansible/roles/teleport-cluster/requirements.yml --force -v
       - name: Symlink role name
         run: ln -s ../../teleport-cluster ansible/roles/teleport-cluster/tests/blueteamvillage.btv-sec-eng-teleport-cluster
       - name: pre-commit modules
