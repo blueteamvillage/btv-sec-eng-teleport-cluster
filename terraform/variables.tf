@@ -49,3 +49,9 @@ variable "teleport_subnet_id" {
   description = "Subnet ID for Teleport"
   type        = string
 }
+
+############################################ Infra ############################################
+variable "aws_account" {
+  description = "AWS Account"
+  type        = string
+}
