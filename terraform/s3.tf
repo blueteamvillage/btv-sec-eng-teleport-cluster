@@ -80,7 +80,7 @@ resource "aws_s3_object" "records" {
 }
 
 resource "aws_s3_bucket" "teleport" {
-  bucket        = replace(lower("${var.PROJECT_PREFIX}-teleport-${random_string.bucket_suffix.result}"), "_", "-")
+  bucket        = replace(lower("${var.PROJECT_PREFIX}-teleport-${data.aws_caller_identity.current.account_id}-${random_string.bucket_suffix.result}"), "_", "-")
   force_destroy = true
 
   tags = {
