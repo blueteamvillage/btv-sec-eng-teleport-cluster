@@ -72,7 +72,7 @@ resource "aws_security_group_rule" "outbound" {
 ############################################ EC2 ############################################
 resource "aws_instance" "teleport" {
   key_name               = var.public_key_name
-  ami                    = var.ubunut-ami
+  ami                    = var.teleport_ami
   instance_type          = var.instance_type
   subnet_id              = var.teleport_subnet_id
   vpc_security_group_ids = [aws_security_group.teleport_cluster.id]
