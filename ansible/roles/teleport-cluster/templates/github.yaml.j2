@@ -4,6 +4,7 @@ metadata:
   # Connector name that will be used with `tsh --auth=github login`
   name: github
 spec:
+  api_endpoint_url: ""
   # Client ID of your GitHub OAuth App
   client_id: {{ github_client_id }}
   # Client secret of your GitHub OAuth App
@@ -12,6 +13,7 @@ spec:
   display: GitHub
   # Callback URL that will be called after successful authentication
   redirect_url: {{ github_redirect_url }}
+  teams_to_logins: null
   # Mapping of org/team memberships onto allowed roles
   teams_to_roles:
     # GitHub organization name
