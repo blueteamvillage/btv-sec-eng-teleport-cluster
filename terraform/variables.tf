@@ -55,3 +55,8 @@ variable "aws_account" {
   description = "AWS Account"
   type        = string
 }
+
+variable "teleport_ami" {
+  description = "Teleport AMI ID"
+  type        = string
+}
