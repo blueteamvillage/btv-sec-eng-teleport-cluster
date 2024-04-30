@@ -87,6 +87,9 @@ module "teleport" {
   vpc_id = <VPC ID to deploy Teleport too>
   teleport_subnet_id = <Subnet ID to deploy Teleport too>
 
+  #### Inra ####
+  aws_account  = data.aws_caller_identity.current.account_id
+  teleport_ami = var.ubunut-ami
 }
 ```
 1. `terraform init`
