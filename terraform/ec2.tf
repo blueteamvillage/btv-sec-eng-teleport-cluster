@@ -29,6 +29,16 @@ resource "aws_security_group_rule" "web_interface" {
   security_group_id = aws_security_group.teleport_cluster.id
 }
 
+resource "aws_security_group_rule" "ssh_proxy_ansible" {
+  description       = "SSH port. This is Teleports equivalent of port 22 for SSH. Only used when Teleport Node is replacing SSH."
+  type              = "ingress"
+  from_port         = 2022
+  to_port           = 2022
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.teleport_cluster.id
+}
+
 resource "aws_security_group_rule" "proxy" {
   description       = "Port used by Teleport Proxy Service instances to dial agents in Proxy Peering mode."
   type              = "ingress"
