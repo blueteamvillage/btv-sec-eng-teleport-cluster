@@ -61,7 +61,7 @@ variable "teleport_ami" {
   type        = string
 }
 
-variable "teleport_app_serv_role_policy {
+variable "teleport_app_serv_role_policy" {
   description = "Associate a role with the Teleport Application Service"
   type        = string
 }
