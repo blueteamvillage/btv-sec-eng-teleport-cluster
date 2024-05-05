@@ -42,10 +42,10 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "teleport" {
   }
 }
 
-resource "aws_s3_bucket_acl" "teleport" {
-  bucket = aws_s3_bucket.teleport.bucket
-  acl    = "private"
-}
+#resource "aws_s3_bucket_acl" "teleport" {
+#  bucket = aws_s3_bucket.teleport.bucket
+#  acl    = "private"
+#}
 
 resource "aws_s3_bucket_lifecycle_configuration" "teleport" {
   bucket = aws_s3_bucket.teleport.bucket
