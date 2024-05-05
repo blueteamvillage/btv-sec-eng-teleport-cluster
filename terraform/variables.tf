@@ -60,3 +60,8 @@ variable "teleport_ami" {
   description = "Teleport AMI ID"
   type        = string
 }
+
+variable "teleport_app_serv_role_policy {
+  description = "Associate a role with the Teleport Application Service"
+  type        = string
+}
