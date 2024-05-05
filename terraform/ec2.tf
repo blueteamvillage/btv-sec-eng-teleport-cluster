@@ -9,6 +9,16 @@ resource "aws_security_group" "teleport_cluster" {
   }
 }
 
+resource "aws_security_group_rule" "sshd" {
+  description       = "SSH port to allow IaC"
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.teleport_cluster.id
+}
+
 resource "aws_security_group_rule" "web_interface" {
   description       = "In TLS Routing mode, the Proxy handles all protocols, including Web UI, HTTPS, Kubernetes, SSH, and all databases on a single port."
   type              = "ingress"
