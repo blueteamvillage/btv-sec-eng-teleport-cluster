@@ -117,7 +117,6 @@ resource "aws_instance" "teleport" {
 }
 
 resource "aws_eip" "telelport" {
-  vpc      = true
   instance = aws_instance.teleport.id
 
   tags = {
