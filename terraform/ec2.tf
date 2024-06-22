@@ -1,7 +1,7 @@
 ############################################ Security group ############################################
 resource "aws_security_group" "teleport_cluster" {
-  name        = "${var.PROJECT_PREFIX}-teleport-cluster-sg"
-  description = "${var.PROJECT_PREFIX} Teloeport Cluster Security Group"
+  name        = "${var.teleport_ec2_role_name}_SG"
+  description = "${var.teleport_ec2_role_name} Security Group"
   vpc_id      = var.vpc_id
 
   tags = {
