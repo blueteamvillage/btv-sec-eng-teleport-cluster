@@ -4,6 +4,11 @@ variable "PROJECT_PREFIX" {
   type        = string
 }
 
+variable "ec2_name" {
+  description = "Name of EC2 tag"
+  type        = string
+}
+
 variable "primary_region" {
   description = "Region to create resources in"
   type        = string
