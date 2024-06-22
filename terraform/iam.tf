@@ -19,7 +19,7 @@ data "aws_iam_policy_document" "teleport" {
 }
 
 resource "aws_iam_role" "teleport" {
-  name               = "${var.PROJECT_PREFIX}-teleport-cluster"
+  name               = "${var.teleport_ec2_role_name}"
   assume_role_policy = "${var.teleport_app_serv_role_policy}"
 
   tags = {
@@ -29,7 +29,7 @@ resource "aws_iam_role" "teleport" {
 
 ############################################ IAM Profile ############################################
 resource "aws_iam_instance_profile" "teleport" {
-  name       = "${var.PROJECT_PREFIX}-teleport-cluster"
+  name       = "${var.teleport_ec2_role_name}"
   role       = aws_iam_role.teleport.name
   depends_on = [aws_iam_role_policy.s3]
 }
@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "ec2" {
 }
 
 resource "aws_iam_role_policy" "ec2" {
-  name   = "${var.PROJECT_PREFIX}-teleport-cluster-ec2"
+  name   = "${var.teleport_ec2_role_name}_EC2"
   role   = aws_iam_role.teleport.id
   policy = data.aws_iam_policy_document.ec2.json
 }
@@ -82,7 +82,7 @@ data "aws_iam_policy_document" "s3" {
 }
 
 resource "aws_iam_role_policy" "s3" {
-  name   = "${var.PROJECT_PREFIX}-teleport-cluster-s3"
+  name   = "${var.teleport_ec2_role_name}_S3"
   role   = aws_iam_role.teleport.id
   policy = data.aws_iam_policy_document.s3.json
 }
@@ -126,7 +126,7 @@ data "aws_iam_policy_document" "dynamo" {
 }
 
 resource "aws_iam_role_policy" "dynamo" {
-  name   = "${var.PROJECT_PREFIX}-teleport-cluster-dynamo"
+  name   = "${var.teleport_ec2_role_name}_DYNAMO"
   role   = aws_iam_role.teleport.id
   policy = data.aws_iam_policy_document.dynamo.json
 }
@@ -152,7 +152,7 @@ data "aws_iam_policy_document" "route53" {
 
 // Policy to permit cluster to access Route53 (SSL)
 resource "aws_iam_role_policy" "route53" {
-  name   = "${var.PROJECT_PREFIX}-teleport-cluster-route53"
+  name   = "${var.teleport_ec2_role_name}_ROUTE53"
   role   = aws_iam_role.teleport.id
   policy = data.aws_iam_policy_document.route53.json
 }
