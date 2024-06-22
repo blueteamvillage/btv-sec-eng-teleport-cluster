@@ -111,7 +111,7 @@ resource "aws_instance" "teleport" {
   }
 
   tags = {
-    Name    = "${var.PROJECT_PREFIX}-teleport-cluster"
+    Name    = var.ec2_name
     Project = var.PROJECT_PREFIX
   }
 }
