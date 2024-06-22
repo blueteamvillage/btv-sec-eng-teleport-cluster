@@ -70,3 +70,8 @@ variable "teleport_app_serv_role_policy" {
   description = "Associate a role with the Teleport Application Service"
   type        = string
 }
+
+variable "teleport_ec2_role_name" {
+  description = "Role used on the Teleport EC2 server"
+  type        = string
+}
