@@ -168,6 +168,7 @@ resource "aws_iam_role_policy" "route53" {
   policy = data.aws_iam_policy_document.route53.json
 }
 
+// Policy to permit cluster to access IAM (OIDC)
 data "aws_iam_policy_document" "teleport_oidc" {
   version = "2012-10-17"
   statement {
@@ -188,4 +189,23 @@ resource "aws_iam_role_policy" "teleport_oidc" {
   name   = "${var.teleport_ec2_role_name}_OIDC"
   role   = aws_iam_role.teleport.id
   policy = data.aws_iam_policy_document.teleport_oidc.json
+}
+
+// Policy to permit cluster to access SSM (Session recordings)
+data "aws_iam_policy_document" "teleport_ssm" {
+  version = "2012-10-17"
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssm:CreateDocument"
+    ]
+    resources = ["*"]
+  }
+}
+
+// Policy to permit cluster to access SSM (Session recordings)
+resource "aws_iam_role_policy" "teleport_ssm" {
+  name   = "${var.teleport_ec2_role_name}_SSM"
+  role   = aws_iam_role.teleport.id
+  policy = data.aws_iam_policy_document.teleport_ssm.json
 }
