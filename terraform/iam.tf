@@ -83,6 +83,13 @@ data "aws_iam_policy_document" "s3" {
     ]
     resources = ["arn:aws:s3:::${aws_s3_bucket.teleport.bucket}/records/*"]
   }
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:*"
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "s3" {
