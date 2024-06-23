@@ -19,17 +19,18 @@ data "aws_iam_policy_document" "teleport" {
 }
 
 resource "aws_iam_role" "teleport" {
-  name               = "${var.teleport_ec2_role_name}"
-  assume_role_policy = "${var.teleport_app_serv_role_policy}"
+  name               = var.teleport_ec2_role_name
+  assume_role_policy = var.teleport_app_serv_role_policy
 
   tags = {
+    Name    = var.teleport_ec2_role_name
     Project = var.PROJECT_PREFIX
   }
 }
 
 ############################################ IAM Profile ############################################
 resource "aws_iam_instance_profile" "teleport" {
-  name       = "${var.teleport_ec2_role_name}"
+  name       = var.teleport_ec2_role_name
   role       = aws_iam_role.teleport.name
   depends_on = [aws_iam_role_policy.s3]
 }
