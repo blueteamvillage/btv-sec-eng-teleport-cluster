@@ -176,7 +176,8 @@ data "aws_iam_policy_document" "teleport_oidc" {
       "iam:CreateOpenIDConnectProvider",
       "iam:TagOpenIDConnectProvider",
       "iam:GetRole",
-      "iam:UpdateAssumeRolePolicy"
+      "iam:UpdateAssumeRolePolicy",
+      "iam:PutRolePolicy"
     ]
     resources = ["*"]
   }
