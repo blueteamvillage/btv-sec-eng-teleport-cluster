@@ -5,6 +5,7 @@ resource "aws_security_group" "teleport_cluster" {
   vpc_id      = var.vpc_id
 
   tags = {
+    Name    = "${var.teleport_ec2_role_name}_SG"
     Project = var.PROJECT_PREFIX
   }
 }
