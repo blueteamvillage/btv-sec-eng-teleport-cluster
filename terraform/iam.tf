@@ -157,3 +157,21 @@ resource "aws_iam_role_policy" "route53" {
   role   = aws_iam_role.teleport.id
   policy = data.aws_iam_policy_document.route53.json
 }
+
+data "aws_iam_policy_document" "teleport_oidc" {
+  version = "2012-10-17"
+  statement {
+    effect = "Allow"
+    actions = [
+      "iam:CreateOpenIDConnectProvider"
+    ]
+    resources = ["*"]
+  }
+}
+
+// Policy to permit cluster to access IAM (OIDC)
+resource "aws_iam_role_policy" "teleport_oidc" {
+  name   = "${var.teleport_ec2_role_name}_OIDC"
+  role   = aws_iam_role.teleport.id
+  policy = data.aws_iam_policy_document.teleport_oidc.json
+}
