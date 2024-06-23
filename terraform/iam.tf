@@ -163,7 +163,8 @@ data "aws_iam_policy_document" "teleport_oidc" {
   statement {
     effect = "Allow"
     actions = [
-      "iam:CreateOpenIDConnectProvider"
+      "iam:CreateOpenIDConnectProvider",
+      "iam:TagOpenIDConnectProvider"
     ]
     resources = ["*"]
   }
