@@ -23,8 +23,11 @@ resource "aws_iam_role" "teleport" {
   assume_role_policy = var.teleport_app_serv_role_policy
 
   tags = {
-    Name    = var.teleport_ec2_role_name
-    Project = var.PROJECT_PREFIX
+    Name                       = var.teleport_ec2_role_name
+    Project                    = var.PROJECT_PREFIX
+    "teleport.dev/origin"      = "integration_awsoidc"
+    "teleport.dev/cluster"     = "teleport.blueteamvillage.org"
+    "teleport.dev/integration" = "defcon-2024-obsidian-teleport-enroll-ec2"
   }
 }
 
