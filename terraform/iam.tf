@@ -86,7 +86,7 @@ data "aws_iam_policy_document" "s3" {
   statement {
     effect = "Allow"
     actions = [
-      "s3:*"
+      "s3:CreateBucket"
     ]
     resources = ["*"]
   }
